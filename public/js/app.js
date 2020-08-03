@@ -53,9 +53,13 @@ class Form
     }
 
     data() {
-        let data = Object.assign({}, this); // clones the object
-        delete data.originalData;
-        delete data.errors;
+        let data = {};
+        for (let property in this.originalData) {
+            data[property]
+        };
+        // let data = Object.assign({}, this); // clones the object
+        // delete data.originalData;
+        // delete data.errors;
         return data;
     }
 
@@ -63,32 +67,52 @@ class Form
         for (let field in this.orignalData) {
             this[field] = '';
         }
+        this.errors.clear();
     }
 
-    // post(url) {
-    //     this.submit('post', url);
-    // }
+    post(url) {
+        this.submit('post', url);
+    }
 
+    delete(url) {
+        this.submit('delete', url);
+    }
 
     submit(requestType, url) {
-        // axios
-        // axios[requestType](url, this.$data)
-        axios[requestType](url, this.data())
-            // .then(this.onSucsess)
-            .then(this.onSuccess.bind(this)) // this keyword is rebinded to current instance
-            .catch(this.onFail.bind(this))
+        return new Promise((resolve, reject) => {
+            // axios
+            // axios[requestType](url, this.$data)
+            axios[requestType](url, this.data())
+                // .then(this.onSucsess)
+                // .then(this.onSuccess.bind(this)) // this keyword is rebinded to current instance
+                .then(response => {
+                    this.onSuccess(response.data);
+
+                    resolve(response.data);
+                })
+                .catch(error => {
+                    this.onFail(error.response.data)
+                    reject(error.response.data);
+                })
+                // .catch(this.onFail.bind(this))
             // .catch(error => this.form.errors.record(error.response.data.errors)); // moved to onFail
+
+        });
     }
 
-    onSuccess(response) {
+    // onSuccess(response) {
+    onSuccess(data) {
         // TEMPORARY
-        alert(response.data.message);
-        this.errors.clear() ;
+        // alert(response.data.message);
+        alert(data.message);
+        // this.errors.clear(); // moved to reset()
         this.reset();
     }
 
-    onFail(error) {
-        this.errors.record(error.response.data.errors);
+    // onFail(error) {
+    onFail(errors) {
+        // this.errors.record(error.response.data.errors);
+        this.errors.record(errors);
     }
 }
 
@@ -102,20 +126,17 @@ new Vue({
         }),
         // errors: new Errors()
     },
-    mounted() {
-        // this.$http.get('/skills').then(response => this.skills = response.data);
-    },
     methods: {
         onSubmit() {
             // axios.post('/projects', this.$data)
             //     .then(this.onSucsess)
             //     .catch(error => this.form.errors.record(error.response.data.errors));
-            this.form.submit('post', '/projects');
+            this.form.submit('post', '/projects')
+                .then(data => console.log(data))
+                .catch(errors => console.log(errors));
         },
-        onSucsess(response) {
+        onSuccess(response) {
             alert(response.data.message);
-            // this.name = '';
-            // this.description = '';
             form.reset();
         }
     }

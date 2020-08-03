@@ -9,6 +9,7 @@
 </head>
 <body>
 <div id="root" class="container">
+    <example></example>
     @include('projects.list')
 
 {{--    <form method="post" action="/projects" @submit.prevent="onSubmit" @keydown="form.errors.clear($event.target.name)">--}}
@@ -32,8 +33,9 @@
         </div>
     </form>
 </div>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="https://unpkg.com/vue@2.1.3/dist/vue.js"></script>
+{{--<script src="https://unpkg.com/axios/dist/axios.min.js"></script>--}}
+{{--<script src="https://unpkg.com/vue@2.1.3/dist/vue.js"></script>--}}
+{{--get rid of them and install by npm--}}
 <script src="/js/app.js"></script>
 </body>
 </html>

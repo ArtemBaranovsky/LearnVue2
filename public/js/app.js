@@ -24,7 +24,11 @@ class Errors {
     }
 
     clear(field) {
-        delete this.errors[field]/*[0]*/;
+        if (field) {
+            delete this.errors[field]/*[0]*/;
+            return ;
+        }
+        this.errors = {};
     }
 
     has(field) {
@@ -36,38 +40,83 @@ class Errors {
     }
 }
 
+class Form
+{
+    constructor(data) {
+        // this.data = data
+        this.orignalData = data
+        // better this.data.name or form.name
+        for (let field in data) {
+            this[field] = data.field;
+        }
+        this.errors = new Errors();
+    }
+
+    data() {
+        let data = Object.assign({}, this); // clones the object
+        delete data.originalData;
+        delete data.errors;
+        return data;
+    }
+
+    reset() {
+        for (let field in this.orignalData) {
+            this[field] = '';
+        }
+    }
+
+    // post(url) {
+    //     this.submit('post', url);
+    // }
+
+
+    submit(requestType, url) {
+        // axios
+        // axios[requestType](url, this.$data)
+        axios[requestType](url, this.data())
+            // .then(this.onSucsess)
+            .then(this.onSuccess.bind(this)) // this keyword is rebinded to current instance
+            .catch(this.onFail.bind(this))
+            // .catch(error => this.form.errors.record(error.response.data.errors)); // moved to onFail
+    }
+
+    onSuccess(response) {
+        // TEMPORARY
+        alert(response.data.message);
+        this.errors.clear() ;
+        this.reset();
+    }
+
+    onFail(error) {
+        this.errors.record(error.response.data.errors);
+    }
+}
+
 // Vue.prototype.$http = axios;
 new Vue({
     el: '#root',
     data: {
-        name: '',
-        description: '',
-        errors: new Errors()
+        form: new Form({
+            name: '',
+            description: '',
+        }),
+        // errors: new Errors()
     },
     mounted() {
         // this.$http.get('/skills').then(response => this.skills = response.data);
     },
     methods: {
         onSubmit() {
-            // alert('submitting');
-            // axios.post('projects', {
-            //    name: this.name,
-            //     description: this.description,
-            // });
-            axios.post('/projects', this.$data)
-                // .then(response => alert('Success'))
-                .then(this.onSucsess)
-                .catch(error =>
-                    // { console.log(error.response.data.errors) }
-                    // this.errors = error.response.data
-                    this.errors.record(error.response.data.errors)
-                );
+            // axios.post('/projects', this.$data)
+            //     .then(this.onSucsess)
+            //     .catch(error => this.form.errors.record(error.response.data.errors));
+            this.form.submit('post', '/projects');
         },
         onSucsess(response) {
             alert(response.data.message);
-            this.name = '';
-            this.description = '';
-            // form.reset();
+            // this.name = '';
+            // this.description = '';
+            form.reset();
         }
     }
 });
